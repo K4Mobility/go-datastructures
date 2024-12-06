@@ -194,6 +194,17 @@ func (rb *RingBuffer) IsDisposed() bool {
 	return atomic.LoadUint64(&rb.disposed) == 1
 }
 
+// Reset will clear the queue and reset all internal state.
+func (rb *RingBuffer) Reset() {
+	atomic.StoreUint64(&rb.queue, 0)
+	atomic.StoreUint64(&rb.dequeue, 0)
+	atomic.StoreUint64(&rb.disposed, 0)
+	for i := uint64(0); i < uint64(len(rb.nodes)); i++ {
+		rb.nodes[i].data = nil
+		atomic.StoreUint64(&rb.nodes[i].position, i)
+	}
+}
+
 // NewRingBuffer will allocate, initialize, and return a ring buffer
 // with the specified size.
 func NewRingBuffer(size uint64) *RingBuffer {
